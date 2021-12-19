@@ -9,6 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Sample.Shop.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Sample.Shop.WebApi
 {
@@ -25,6 +27,9 @@ namespace Sample.Shop.WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddDbContext<ShopDbContext>(options => 
+                options.UseSqlServer(Configuration.GetConnectionString("ShopDb")));
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

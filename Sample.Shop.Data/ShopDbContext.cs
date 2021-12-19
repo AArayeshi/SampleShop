@@ -15,5 +15,12 @@ namespace Sample.Shop.Data
         {
 
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Product>()
+                .HasKey(p => p.Id);
+        }
+
     }
 }
