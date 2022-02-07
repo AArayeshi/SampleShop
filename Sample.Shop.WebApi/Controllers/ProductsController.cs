@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sample.Shop.Business.Models;
 using Sample.Shop.Data;
+using Sample.Shop.WebApi.Contracts;
 
 namespace Sample.Shop.WebApi.Controllers
 {
@@ -23,9 +24,18 @@ namespace Sample.Shop.WebApi.Controllers
 
         // GET: api/Products
         [HttpGet]
-        public List<Product> GetProducts()
+        public List<ProductContract> GetProducts()
         {
-            return _context.Products.ToList();
+            var products = _context.Products.ToList();
+
+            return products.Select(p => new ProductContract
+            {
+                Id = p.Id,
+                Title = p.Title,
+                Description = p.Description,
+                Price = p.Price / 100
+            }).ToList();
+
         }
 
         // GET: api/Products/5
