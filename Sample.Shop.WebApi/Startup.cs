@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Sample.Shop.Data;
 using Microsoft.EntityFrameworkCore;
+using AutoMapper;
 
 namespace Sample.Shop.WebApi
 {
@@ -27,9 +28,11 @@ namespace Sample.Shop.WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+
             services.AddDbContext<ShopDbContext>(options => 
                 options.UseSqlServer(Configuration.GetConnectionString("ShopDb")));
 
+            services.AddAutoMapper(typeof(Startup));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

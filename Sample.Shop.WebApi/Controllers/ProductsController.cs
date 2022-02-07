@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,10 +17,12 @@ namespace Sample.Shop.WebApi.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly ShopDbContext _context;
+        private readonly IMapper _mapper;
 
-        public ProductsController(ShopDbContext context)
+        public ProductsController(ShopDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: api/Products
@@ -28,14 +31,7 @@ namespace Sample.Shop.WebApi.Controllers
         {
             var products = _context.Products.ToList();
 
-            return products.Select(p => new ProductContract
-            {
-                Id = p.Id,
-                Title = p.Title,
-                Description = p.Description,
-                Price = p.Price / 100
-            }).ToList();
-
+            return products.Select(p => _mapper.Map<ProductContract>(p)).ToList();
         }
 
         // GET: api/Products/5
