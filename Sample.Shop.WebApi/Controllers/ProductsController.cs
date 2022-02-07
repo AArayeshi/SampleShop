@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sample.Shop.Business.Models;
 using Sample.Shop.Data;
+using Sample.Shop.WebApi.Contracts;
 
 namespace Sample.Shop.WebApi.Controllers
 {
@@ -15,17 +17,21 @@ namespace Sample.Shop.WebApi.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly ShopDbContext _context;
+        private readonly IMapper _mapper;
 
-        public ProductsController(ShopDbContext context)
+        public ProductsController(ShopDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: api/Products
         [HttpGet]
-        public List<Product> GetProducts()
+        public List<ProductContract> GetProducts()
         {
-            return _context.Products.ToList();
+            var products = _context.Products.ToList();
+
+            return products.Select(p => _mapper.Map<ProductContract>(p)).ToList();
         }
 
         // GET: api/Products/5
