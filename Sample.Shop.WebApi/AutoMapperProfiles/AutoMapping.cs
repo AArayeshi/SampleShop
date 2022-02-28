@@ -15,6 +15,9 @@ namespace Sample.Shop.WebApi.AutoMapperProfiles
             // means you want to map from Product to ProductContract
             CreateMap<Product, ProductContract>()
                 .ForMember(productContract => productContract.Price, opt => opt.MapFrom(product => product.Price / 100));
+
+            CreateMap<Cart, CartContract>();
+            
         }
     }
 }
