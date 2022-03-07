@@ -43,8 +43,8 @@ namespace Sample.Shop.WebApi.Controllers
             return _mapper.Map<CartContract>(cart);
         }
 
-        [HttpPost("{cartId}/add/{productId}")]
-        public async Task<CartContract> AddProduct(int cartId, int productId)
+        [HttpPost("{cartId}/add/{productId}/{qty}")]
+        public async Task<CartContract> AddProduct(int cartId, int productId, int qty)
         {
             var userId = 1;
 
@@ -56,14 +56,22 @@ namespace Sample.Shop.WebApi.Controllers
             if (product == null)
                 throw new ApplicationException("Product not exists.");
 
-            var cartProduct = new CartProduct()
+            var cartProduct = new CartProduct();
+            var cartProduct1 = _context.CartProducts.FirstOrDefault(p => p.CartId == cartId && p.ProductId == productId);
+            if (cartProduct1 == null)
             {
-                CartId = cart.Id,
-                ProductId = product.Id
-            };
+                cartProduct.CartId = cartId;
+                cartProduct.ProductId = productId;
+                cartProduct.quantity = qty;
+                _context.CartProducts.Add(cartProduct);
+            }
+            else
+            {
+                cartProduct1.quantity += qty;
+            }
 
-            _context.CartProducts.Add(cartProduct);
-            await _context.SaveChangesAsync();
+            cart.ItemsCount += qty;
+            cart.TotalPrice += (qty * product.Price);
 
             return _mapper.Map<CartContract>(cart);
         }
