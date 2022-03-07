@@ -56,22 +56,25 @@ namespace Sample.Shop.WebApi.Controllers
             if (product == null)
                 throw new ApplicationException("Product not exists.");
 
-            var cartProduct = new CartProduct();
-            var cartProduct1 = _context.CartProducts.FirstOrDefault(p => p.CartId == cartId && p.ProductId == productId);
-            if (cartProduct1 == null)
+            var cartProduct = _context.CartProducts.FirstOrDefault(p => p.CartId == cartId && p.ProductId == productId);
+            if (cartProduct == null)
             {
-                cartProduct.CartId = cartId;
-                cartProduct.ProductId = productId;
-                cartProduct.quantity = qty;
+                cartProduct = new CartProduct()
+                {
+                    CartId = cartId,
+                    ProductId = productId,
+                    Quantity = qty
+                };
+
                 _context.CartProducts.Add(cartProduct);
             }
             else
             {
-                cartProduct1.quantity += qty;
+                cartProduct.Quantity += qty;
             }
 
             cart.ItemsCount += qty;
-            cart.TotalPrice += (qty * product.Price);
+            cart.TotalPrice = cart.ItemsCount * product.Price;
 
             await _context.SaveChangesAsync();
             return _mapper.Map<CartContract>(cart);
