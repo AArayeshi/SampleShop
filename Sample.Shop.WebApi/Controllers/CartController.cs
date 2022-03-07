@@ -73,6 +73,7 @@ namespace Sample.Shop.WebApi.Controllers
             cart.ItemsCount += qty;
             cart.TotalPrice += (qty * product.Price);
 
+            await _context.SaveChangesAsync();
             return _mapper.Map<CartContract>(cart);
         }
 
