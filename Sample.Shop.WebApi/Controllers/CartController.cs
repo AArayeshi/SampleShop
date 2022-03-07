@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sample.Shop.Business.Models;
 using Sample.Shop.Data;
@@ -19,6 +20,7 @@ namespace Sample.Shop.WebApi.Controllers
         private readonly ShopDbContext _context;
         private readonly IMapper _mapper;
         private readonly ILogger<CartsController> _logger;
+        const int userId = 1;
 
         public CartsController(ShopDbContext context, IMapper mapper, ILogger<CartsController> logger)
         {
@@ -27,12 +29,22 @@ namespace Sample.Shop.WebApi.Controllers
             _logger = logger;
         }
 
+        [HttpGet("{cartId}")]
+        public async Task<CartContract> GetCart(int cartId)
+        {
+            var cart = await _context.Carts.FirstOrDefaultAsync(c => c.Id == cartId && c.UserId == userId);
+            if (cart == null)
+                throw new ApplicationException("Cart not exists.");
+
+            return _mapper.Map<CartContract>(cart);
+        }
+
         [HttpPost("create")]
         public async Task<CartContract> CreateCart()
         {
             var cart = new Cart()
             {
-                UserId = 1,
+                UserId = userId,
                 CreateTime = DateTime.Now
             };
             _context.Carts.Add(cart);
@@ -46,8 +58,6 @@ namespace Sample.Shop.WebApi.Controllers
         [HttpPost("{cartId}/add/{productId}/{qty}")]
         public async Task<CartContract> AddProduct(int cartId, int productId, int qty)
         {
-            var userId = 1;
-
             var cart = _context.Carts.FirstOrDefault(c => c.Id == cartId && c.UserId == userId);
             if (cart == null)
                 throw new ApplicationException("Cart not exists.");
@@ -80,5 +90,38 @@ namespace Sample.Shop.WebApi.Controllers
             return _mapper.Map<CartContract>(cart);
         }
 
+        [HttpPost("{cartId}/remove/{productId}/{qty?}")]
+        public async Task<CartContract> RemoveProduct(int cartId, int productId, int? qty = null)
+        {
+            var cart = _context.Carts.FirstOrDefault(c => c.Id == cartId && c.UserId == userId);
+            if (cart == null)
+                throw new ApplicationException("Cart not exists.");
+
+            var product = _context.Products.FirstOrDefault(p => p.Id == productId);
+            if (product == null)
+                throw new ApplicationException("Product not exists.");
+
+            var cartProduct = _context.CartProducts.FirstOrDefault(p => p.CartId == cartId && p.ProductId == productId);
+            if (cartProduct == null)
+                throw new ApplicationException("Product not exists.");
+
+            if (qty == null)
+            {
+                _context.CartProducts.Remove(cartProduct);
+            }
+            else
+            {
+                if(cartProduct.Quantity < qty.Value)
+                    throw new ApplicationException("There is no enough quantity.");
+
+                cartProduct.Quantity -= qty.Value;
+                cart.ItemsCount -= qty.Value;
+                cart.TotalPrice = cart.ItemsCount * product.Price;
+            }
+            
+            await _context.SaveChangesAsync();
+
+            return _mapper.Map<CartContract>(cart);
+        }
     }
 }
