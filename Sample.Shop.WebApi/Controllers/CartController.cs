@@ -56,7 +56,7 @@ namespace Sample.Shop.WebApi.Controllers
         }
 
         [HttpPost("{cartId}/add/{productId}/{qty}")]
-        public async Task<CartContract> AddProduct(int cartId, int productId, int qty)
+        public async Task<CartContract> AddProduct(int cartId, int productId, decimal qty)
         {
             var cart = _context.Carts.FirstOrDefault(c => c.Id == cartId && c.UserId == userId);
             if (cart == null)
@@ -91,7 +91,7 @@ namespace Sample.Shop.WebApi.Controllers
         }
 
         [HttpPost("{cartId}/remove/{productId}/{qty?}")]
-        public async Task<CartContract> RemoveProduct(int cartId, int productId, int? qty = null)
+        public async Task<CartContract> RemoveProduct(int cartId, int productId, decimal? qty = null)
         {
             var cart = _context.Carts.FirstOrDefault(c => c.Id == cartId && c.UserId == userId);
             if (cart == null)
