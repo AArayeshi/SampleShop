@@ -56,7 +56,7 @@ namespace Sample.Shop.WebApi.Controllers
         }
 
         [HttpPost("{cartId}/add/{productId}/{qty}")]
-        public async Task<CartContract> AddProduct(int cartId, int productId, int qty)
+        public async Task<CartContract> AddProduct(int cartId, int productId, decimal qty)
         {
             var cart = _context.Carts.FirstOrDefault(c => c.Id == cartId && c.UserId == userId);
             if (cart == null)
@@ -75,7 +75,7 @@ namespace Sample.Shop.WebApi.Controllers
                     ProductId = productId,
                     Quantity = qty
                 };
-
+                cart.ItemsCount++;
                 _context.CartProducts.Add(cartProduct);
             }
             else
@@ -83,15 +83,15 @@ namespace Sample.Shop.WebApi.Controllers
                 cartProduct.Quantity += qty;
             }
 
-            cart.ItemsCount += qty;
-            cart.TotalPrice = cart.ItemsCount * product.Price;
+            //cart.ItemsCount += qty;
+            //cart.TotalPrice = cart.ItemsCount * product.Price;
 
             await _context.SaveChangesAsync();
             return _mapper.Map<CartContract>(cart);
         }
 
         [HttpPost("{cartId}/remove/{productId}/{qty?}")]
-        public async Task<CartContract> RemoveProduct(int cartId, int productId, int? qty = null)
+        public async Task<CartContract> RemoveProduct(int cartId, int productId, decimal? qty = null)
         {
             var cart = _context.Carts.FirstOrDefault(c => c.Id == cartId && c.UserId == userId);
             if (cart == null)
@@ -108,6 +108,7 @@ namespace Sample.Shop.WebApi.Controllers
             if (qty == null)
             {
                 _context.CartProducts.Remove(cartProduct);
+                cart.ItemsCount--;
             }
             else
             {
@@ -115,8 +116,12 @@ namespace Sample.Shop.WebApi.Controllers
                     throw new ApplicationException("There is no enough quantity.");
 
                 cartProduct.Quantity -= qty.Value;
-                cart.ItemsCount -= qty.Value;
-                cart.TotalPrice = cart.ItemsCount * product.Price;
+                if(cartProduct.Quantity == 0)
+                {
+                    _context.CartProducts.Remove(cartProduct);
+                    cart.ItemsCount--;
+                }
+                //cart.TotalPrice = cart.ItemsCount * product.Price;
             }
             
             await _context.SaveChangesAsync();
