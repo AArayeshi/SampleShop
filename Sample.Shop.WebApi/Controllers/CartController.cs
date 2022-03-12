@@ -117,7 +117,10 @@ namespace Sample.Shop.WebApi.Controllers
 
                 cartProduct.Quantity -= qty.Value;
                 if(cartProduct.Quantity == 0)
-                    cart.ItemsCount --;
+                {
+                    _context.CartProducts.Remove(cartProduct);
+                    cart.ItemsCount--;
+                }
                 //cart.TotalPrice = cart.ItemsCount * product.Price;
             }
             
