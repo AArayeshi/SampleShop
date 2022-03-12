@@ -75,7 +75,7 @@ namespace Sample.Shop.WebApi.Controllers
                     ProductId = productId,
                     Quantity = qty
                 };
-
+                cart.ItemsCount++;
                 _context.CartProducts.Add(cartProduct);
             }
             else
@@ -83,8 +83,8 @@ namespace Sample.Shop.WebApi.Controllers
                 cartProduct.Quantity += qty;
             }
 
-            cart.ItemsCount += qty;
-            cart.TotalPrice = cart.ItemsCount * product.Price;
+            //cart.ItemsCount += qty;
+            //cart.TotalPrice = cart.ItemsCount * product.Price;
 
             await _context.SaveChangesAsync();
             return _mapper.Map<CartContract>(cart);
@@ -108,6 +108,7 @@ namespace Sample.Shop.WebApi.Controllers
             if (qty == null)
             {
                 _context.CartProducts.Remove(cartProduct);
+                cart.ItemsCount--;
             }
             else
             {
@@ -115,8 +116,9 @@ namespace Sample.Shop.WebApi.Controllers
                     throw new ApplicationException("There is no enough quantity.");
 
                 cartProduct.Quantity -= qty.Value;
-                cart.ItemsCount -= qty.Value;
-                cart.TotalPrice = cart.ItemsCount * product.Price;
+                if(cartProduct.Quantity == 0)
+                    cart.ItemsCount --;
+                //cart.TotalPrice = cart.ItemsCount * product.Price;
             }
             
             await _context.SaveChangesAsync();
